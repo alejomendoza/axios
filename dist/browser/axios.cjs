@@ -2890,6 +2890,10 @@ var fetchAdapter = isFetchSupported && (async (config) => {
       withCredentials = withCredentials ? 'include' : 'omit';
     }
 
+    // Cloudflare Workers throws when credentials are defined
+    // see https://github.com/cloudflare/workerd/issues/902
+    const isCredentialsSupported = "credentials" in Request.prototype; 
+
     request = new Request(url, {
       ...fetchOptions,
       signal: composedSignal,
@@ -2897,7 +2901,7 @@ var fetchAdapter = isFetchSupported && (async (config) => {
       headers: headers.normalize().toJSON(),
       body: data,
       duplex: "half",
-      credentials: withCredentials
+      credentials: isCredentialsSupported ? withCredentials : undefined
     });
 
     let response = await fetch(request);
